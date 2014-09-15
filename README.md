@@ -14,6 +14,13 @@ Usage
 ========
 
 With this, you can change your opencart url pattern.
+
+License
+========
+
+Free Licensed.
+
+Copyright &copy; Suraj jain
   
   
   
