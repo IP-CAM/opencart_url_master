@@ -1,7 +1,7 @@
 opencart
 ========
 
-This is a free support for opencart users.
+This is a tutorial for opencart users.
 
 Installation
 ========
