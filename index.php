@@ -146,7 +146,7 @@ if(isset($_POST['replaceBy'],$_POST['replaceTo']) && !empty($_POST['replaceBy'])
 }
 ?>
 </div>
-<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/devsj.js"></script>
 </body>
 </html>
