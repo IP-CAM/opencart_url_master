@@ -10,9 +10,9 @@
 require 'server/opencart.php';
 require 'server/Session.php';
 require 'server/Redirect.php';
-define('_ROUTE', explode('opencart_route_update', __DIR__)[0]);
+define('_ROUTE', explode('opencart_url_master', __DIR__)[0]);
 $currentUrl = explode('/',$_SERVER['REQUEST_URI']);	
-$dirUrl = (isset($currentUrl[1]) && $currentUrl[1] != 'opencart_route_update' ? $currentUrl[1] : '');	
+$dirUrl = (isset($currentUrl[1]) && $currentUrl[1] != 'opencart_url_master' ? $currentUrl[1] : '');	
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -40,7 +40,7 @@ if(isset($_POST['replaceBy'],$_POST['replaceTo']) && !empty($_POST['replaceBy'])
 	/ This is a new replacement value to change url pattern.
 	*/
 	$replaceTo	= scan($_POST['replaceTo']);
-	$replaceBy 	= scan($_POST['replaceBy']);
+	$replaceBy 	= scan('_' . ltrim($_POST['replaceBy'], '_'));
 	
 	$urlPattern = (isset($_POST['url_pattern']) ? trim($_POST['url_pattern']) : 'index');
 	
@@ -127,7 +127,7 @@ if(isset($_POST['replaceBy'],$_POST['replaceTo']) && !empty($_POST['replaceBy'])
         	<label for="rby" class="pull-right">Enter New Text : </label>
         </div>
         <div class="col-9">
-            <input type="text" name="replaceBy" id="rby" autocomplete="off" class="text" /><br />
+            <input type="text" name="replaceBy" id="rby" autocomplete="off" class="text" value="_" /><br />
             <small>Note : only characters, number and underscore(_) allowed.</small>
         </div>
     </div>  
@@ -146,7 +146,7 @@ if(isset($_POST['replaceBy'],$_POST['replaceTo']) && !empty($_POST['replaceBy'])
 }
 ?>
 </div>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="js/devsj.js"></script>
 </body>
 </html>
