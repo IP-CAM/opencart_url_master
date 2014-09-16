@@ -18,13 +18,6 @@ $opencart = array(
 				)
 );
 
-$ocConfig = array(
-	'FILE' => array(
-				'config.php',
-				'admin/config.php'						
-				)
-);
-
 /*
 / Functions
 */
@@ -35,7 +28,7 @@ function _updateOCFile($text, $replace_text, $file, $urlPattern) {
 		$fileStr = file_get_contents($file);
 		$fileStr = str_replace($old, $new, $fileStr, $count);
 		
-		if($urlPattern === 'index') {
+		/*if($urlPattern === 'index') {
 			$indexO = array('?' . $replace_text . '=');
 			$indexN = array('index.php?' . $replace_text . '=');
 			$fileStr = str_replace($indexO, $indexN, $fileStr);
@@ -44,7 +37,7 @@ function _updateOCFile($text, $replace_text, $file, $urlPattern) {
 			$indexO = array('index.php?' . $replace_text . '=');
 			$indexN = array('?' . $replace_text . '=');
 			$fileStr = str_replace($indexO, $indexN, $fileStr);
-		}
+		}*/
 		
 		file_put_contents($file, $fileStr);
 		return $count;
