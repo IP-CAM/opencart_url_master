@@ -12,7 +12,12 @@ require 'server/Session.php';
 require 'server/Redirect.php';
 define('_ROUTE', explode('opencart_url_master', __DIR__)[0]);
 $currentUrl = explode('/',$_SERVER['REQUEST_URI']);	
-$dirUrl = (isset($currentUrl[1]) && $currentUrl[1] != 'opencart_url_master' ? $currentUrl[1] : '');	
+$dirUrl = (isset($currentUrl[1]) && $currentUrl[1] != 'opencart_url_master' ? $currentUrl[1] : '');
+
+$localValue = _getOCLocalValue(_ROUTE . 'index.php');
+$localValue = ($localValue) ? $localValue : 'route';		
+$localURL 	= _getOCLocalUrl(_ROUTE . 'system/library/url.php', $localValue);
+	
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -35,15 +40,19 @@ $dirUrl = (isset($currentUrl[1]) && $currentUrl[1] != 'opencart_url_master' ? $c
 </div>
 <h1>Opencart - Change URL Pattern</h1>
 <?php
-if(isset($_POST['replaceBy'],$_POST['replaceTo']) && !empty($_POST['replaceBy']) && !empty($_POST['replaceTo'])) {
+if(isset($_POST['replaceBy'],$_POST['replaceTo'],$_POST['url_pattern'],$_POST['currentTheme']) && !empty($_POST['replaceBy']) && !empty($_POST['replaceTo']) && !empty($_POST['currentTheme'])) {
+	extract($_POST);
 	/*
 	/ This is a new replacement value to change url pattern.
 	*/
-	$replaceTo	= scan($_POST['replaceTo']);
-	$replaceBy 	= scan('_' . ltrim($_POST['replaceBy'], '_'));
-	
-	$urlPattern = (isset($_POST['url_pattern']) ? trim($_POST['url_pattern']) : 'index');
-	
+	if(!scan($replaceBy)) {
+		Session::_setSession('status', '<p style="margin-top: 5px;color: red;">Invalid Text.</p>');	
+		Redirect::to('index.php');
+	}
+	$replaceTo	= trim($replaceTo);
+	$replaceBy 	= trim($replaceBy);
+	$theme		= trim($currentTheme);
+	$urlPattern = (isset($url_pattern) && !empty($url_pattern)? trim($url_pattern) : '');
 	/*
 	/ Please do Not Change anything
 	*/
@@ -78,6 +87,27 @@ if(isset($_POST['replaceBy'],$_POST['replaceTo']) && !empty($_POST['replaceBy'])
 			   $output .= '<li>' . $actionFile . '</li>';
 			  $totalAffectedfiles++;
 			}
+			else if($type === 'THEME' && !empty($dir)) {
+				$dir = $dir . $theme . '/template/';
+				if(is_dir(_ROUTE . $dir)) {
+					if($dh = opendir(_ROUTE . $dir)) {
+						while(($file = readdir($dh)) !== false) {
+							if($file == '.' || $file == '..')continue;
+							if($dh2 = opendir(_ROUTE . $dir . $file)) {
+								while(($filename = readdir($dh2)) !== false) {
+									if($filename == '.' || $filename == '..')continue;
+									$actionFile = _ROUTE . $dir . $file . '/' . $filename;
+									$totalPlaces += _updateOCFile($replaceTo, $replaceBy, $actionFile, $urlPattern);
+									$output .= '<li>' . $actionFile . '</li>';
+									$totalAffectedfiles++;	
+								}
+								closedir($dh2);
+							}
+						}
+						closedir($dh);
+					}
+				}
+			}
 		}
 	}
 	$output .= '</ul>';	
@@ -96,49 +126,67 @@ if(isset($_POST['replaceBy'],$_POST['replaceTo']) && !empty($_POST['replaceBy'])
 				<div class="row"><div class="total_rows">Total Words Replaced : <span style="color:#000">' .  Session::_flashSession('total_places') . '</span></div></div>
 				<div class="row"><div class="col-6"><a href="index.php" class="btn pull-right">Close</a></div>
     		  </div></div>';
-	} else {		
-		$localValue = _getOCLocalValue(_ROUTE . 'index.php');
-		$localValue = ($localValue) ? $localValue : 'route';		
-		$localURL 	= _getOCLocalUrl(_ROUTE . 'system/library/url.php', $localValue);	
+	} else {	
+			
 ?>
 
 <form name="ocForm" action="" method="post" onsubmit="return confirm('Are you sure you want to update?');">
 	<div class="row">
     	<div class="col-3">
-        	<label for="rto" class="pull-right">Select the Pattern : </label>
+        	<label for="rto" class="pull-right">Select URL Pattern <span style="color:blue;font-size:11px;">(Optional)</span>: </label>
         </div>
         <div class="col-9">
             <select name="url_pattern" class="select">
-            	<option value="index" <?php echo ($localURL === 'index' ? 'selected' : ''); ?>>http://<?php echo $_SERVER['HTTP_HOST'] . '/' . $dirUrl; ?>/index.php?<?php echo $localValue; ?>=common/home</option>
-                <option value="noindex" <?php echo ($localURL === 'noindex' ? 'selected' : ''); ?>>http://<?php echo $_SERVER['HTTP_HOST'] . '/' . $dirUrl; ?>/?<?php echo $localValue; ?>=common/home</option>
+            	<option value="">Want to change?</option>
+            	<option value="<?php echo ($localURL === 'index' ? 'noindex' : 'index'); ?>">http://<?php echo $_SERVER['HTTP_HOST'] . '/' . $dirUrl; ?>/<?php echo ($localURL === 'index' ? '' : 'index.php'); ?>?<?php echo $localValue; ?>=common/home</option>
             </select>
         </div>
     </div>
     <div class="row">
     	<div class="col-3">
-        	<label for="rto" class="pull-right">Old Text : </label>
+        	<label for="rto" class="pull-right">Select Your Current Theme <span style="color:red;font-size:11px;">(Required)</span>: </label>
         </div>
         <div class="col-9">
-            <input type="text" name="replaceTo" id="rto" autocomplete="off" class="text" value="<?php echo $localValue; ?>" />
+            <select name="currentTheme" class="select">
+                 <?php
+					foreach(glob(_ROUTE . "catalog/view/theme/*") as $theme) {
+						$themeName = explode(_ROUTE . "catalog/view/theme/",$theme)[1];
+						echo '<option value="'.$themeName.'">'.$themeName.'</option>';	
+					}
+				?>  
+            </select>
+        </div>
+    </div>    
+    <div class="row">
+    	<div class="col-3">
+        	<label for="rto" class="pull-right">Old Text <span style="color:red;font-size:11px;">(Required)</span>: </label>
+        </div>
+        <div class="col-9">
+            <input type="text" name="replaceTo" id="rto" autocomplete="off" class="text" value="<?php echo $localValue; ?>" readonly="readonly" style="color:#999" />
         </div>
     </div> 
     <div class="row">
     	<div class="col-3">
-        	<label for="rby" class="pull-right">Enter New Text : </label>
+        	<label for="rby" class="pull-right">Enter New Text <span style="color:red;font-size:11px;">(Required)</span>: </label>
         </div>
         <div class="col-9">
-            <input type="text" name="replaceBy" id="rby" autocomplete="off" class="text" value="_" /><br />
-            <small>Note : only characters, number and underscore(_) allowed.</small>
+            <input type="text" name="replaceBy" id="rby" autocomplete="off" class="text" value="" /><br />
+            <small>Note : <br />
+            	1) Only characters <strong>[a-zA-Z]</strong>, number <strong>[0-9]</strong> and special characters <strong>(_ - | $ @)</strong> are allowed.<br />
+                2) The text must have one character and one (number or special character).<br />
+                3) Valid formats	 =  <span style="color:green">_dir, 23-dir, pp-39, |page</span><br />
+                3) Invalid formats 	 =  <span style="color:red">_232, page, |33, _, route</span></small>
         </div>
     </div>  
     <div class="row">  
-        <div class="col-6">
+        <div class="col-3">
         	<label for="rby">&nbsp;</label>
         </div>
-         <div class="col-6">    
+         <div class="col-9">    
             <input type="submit" name="submit-form"  value="Replace" class="btn" />
+            <?php if(Session::_sessionExists('status')) { echo Session::_flashSession('status'); } ?>
         </div>
-    </div>
+    </div>    
 </form>
 
 <?php	
