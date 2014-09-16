@@ -15,7 +15,10 @@ $opencart = array(
 				'system/library/url.php',			
 				'admin/view/javascript/common.js',
 				'catalog/view/javascript/common.js'						
-				)
+				),
+	'THEME' => array(	
+				'catalog/view/theme/'
+				)			
 );
 
 /*
@@ -28,7 +31,7 @@ function _updateOCFile($text, $replace_text, $file, $urlPattern) {
 		$fileStr = file_get_contents($file);
 		$fileStr = str_replace($old, $new, $fileStr, $count);
 		
-		/*if($urlPattern === 'index') {
+		if($urlPattern === 'index') {
 			$indexO = array('?' . $replace_text . '=');
 			$indexN = array('index.php?' . $replace_text . '=');
 			$fileStr = str_replace($indexO, $indexN, $fileStr);
@@ -37,7 +40,7 @@ function _updateOCFile($text, $replace_text, $file, $urlPattern) {
 			$indexO = array('index.php?' . $replace_text . '=');
 			$indexN = array('?' . $replace_text . '=');
 			$fileStr = str_replace($indexO, $indexN, $fileStr);
-		}*/
+		}
 		
 		file_put_contents($file, $fileStr);
 		return $count;
@@ -64,7 +67,19 @@ function _getOCLocalUrl($file, $val) {
 }
 
 function scan($str) {
-	return substr(preg_replace("/[^a-zA-Z0-9_]+/", "",trim($str)), 0, 10);
+	if(!preg_match("#^[a-zA-Z0-9\_\-\|\$\@]+$#", $str)) {
+    	return false;
+	}
+	if(preg_match('/\s/',$str)) {
+	  return false;
+	}
+	if(strcspn($str, 'abcdefghijklmnopqrstuvwxyz') === strlen($str)) {
+	  return false;
+	}	
+	if(strcspn($str, '0123456789') === strlen($str) && strcspn($str, '_-|$@') === strlen($str)) {
+	  return false;
+	}	
+	return true;
 }
 
 function _filter($str) {
