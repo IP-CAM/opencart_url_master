@@ -20,15 +20,15 @@ Examples
 
 with "index.php"
 
-1) http://yourdomain.com/index.php?$page=common/home
-2) http://yourdomain.com/index.php?|dir=common/home
-3) http://yourdomain.com/index.php?_path=common/home
+1) http://yourdomain.com/index.php?$page=common/home<br />
+2) http://yourdomain.com/index.php?|dir=common/home<br />
+3) http://yourdomain.com/index.php?_path=common/home<br />
 
 without "index.php"
 
-1) http://yourdomain.com/?$page=common/home
-2) http://yourdomain.com/?|dir=common/home
-3) http://yourdomain.com/?_path=common/home
+1) http://yourdomain.com/?$page=common/home<br />
+2) http://yourdomain.com/?|dir=common/home<br />
+3) http://yourdomain.com/?_path=common/home<br />
 
 License
 ========
